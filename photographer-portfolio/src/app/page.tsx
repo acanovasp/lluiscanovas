@@ -1,7 +1,17 @@
+'use client';
+
+import { useState } from 'react';
 import ImageSlider from '@/components/ImageSlider';
-import { portfolioImages } from '@/data/portfolio';
+import { portfolioImages, getFilteredImages, FilterType } from '@/data/portfolio';
 
 export default function Home() {
+  const [activeFilter, setActiveFilter] = useState<FilterType>('all');
+  const filteredImages = getFilteredImages(activeFilter);
+
+  const handleFilterChange = (filter: FilterType) => {
+    setActiveFilter(filter);
+  };
+
   return (
     <div className="container">
       {/* Header */}
@@ -12,9 +22,24 @@ export default function Home() {
         </div>
         
         <div className="header-section header-center">
-          <button className="filter-link active">Photography</button>
-          <button className="filter-link">Graphic Design</button>
-          <button className="filter-link">All</button>
+          <button 
+            className={`filter-link ${activeFilter === 'photography' ? 'active' : ''}`}
+            onClick={() => handleFilterChange('photography')}
+          >
+            Photography
+          </button>
+          <button 
+            className={`filter-link ${activeFilter === 'graphic-design' ? 'active' : ''}`}
+            onClick={() => handleFilterChange('graphic-design')}
+          >
+            Graphic Design
+          </button>
+          <button 
+            className={`filter-link ${activeFilter === 'all' ? 'active' : ''}`}
+            onClick={() => handleFilterChange('all')}
+          >
+            All
+          </button>
         </div>
         
         <div className="header-section header-right">
@@ -25,7 +50,7 @@ export default function Home() {
 
       {/* Main Content */}
       <main className="main">
-        <ImageSlider images={portfolioImages} />
+        <ImageSlider key={activeFilter} images={filteredImages} />
       </main>
 
       {/* Footer */}

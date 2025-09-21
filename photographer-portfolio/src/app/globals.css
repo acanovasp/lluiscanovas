@@ -72,7 +72,9 @@ img {
 .filter-link {
   font-size: 0.9rem;
   cursor: pointer;
-  transition: opacity 0.3s ease;
+  transition: all 0.3s ease;
+  padding: 0.5rem 0;
+  border-bottom: 2px solid transparent;
 }
 
 .filter-link:hover {
@@ -80,7 +82,8 @@ img {
 }
 
 .filter-link.active {
-  text-decoration: underline;
+  border-bottom-color: #000;
+  font-weight: 500;
 }
 
 .header-right {
@@ -118,6 +121,18 @@ img {
   width: 100%;
   max-width: 1200px;
   margin: 0 auto;
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .slider-main {

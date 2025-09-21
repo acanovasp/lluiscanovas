@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { PortfolioImage } from '@/data/portfolio';
 
@@ -27,13 +27,29 @@ export default function ImageSlider({ images }: ImageSliderProps) {
     setCurrentIndex(index);
   };
 
-  const goToPrevious = () => {
-    setCurrentIndex(prevIndex);
-  };
+  const goToPrevious = useCallback(() => {
+    setCurrentIndex(prev => prev > 0 ? prev - 1 : images.length - 1);
+  }, [images.length]);
 
-  const goToNext = () => {
-    setCurrentIndex(nextIndex);
-  };
+  const goToNext = useCallback(() => {
+    setCurrentIndex(prev => prev < images.length - 1 ? prev + 1 : 0);
+  }, [images.length]);
+
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKeyPress = (event: KeyboardEvent) => {
+      if (event.key === 'ArrowLeft') {
+        goToPrevious();
+      } else if (event.key === 'ArrowRight') {
+        goToNext();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => {
+      window.removeEventListener('keydown', handleKeyPress);
+    };
+  }, [goToPrevious, goToNext]);
 
   return (
     <div className="slider-container">
