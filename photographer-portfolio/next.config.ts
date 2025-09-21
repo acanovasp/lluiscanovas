@@ -8,6 +8,12 @@ const nextConfig: NextConfig = {
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     minimumCacheTTL: 31536000, // 1 year
     qualities: [75, 90, 95], // Add quality settings
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'cdn.sanity.io',
+      },
+    ], // Allow Sanity CDN images
   },
   
   // Performance optimizations

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
-import { PortfolioImage } from '@/data/portfolio';
+import { PortfolioImage } from '@/sanity/queries';
 
 interface ImageSliderProps {
   images: PortfolioImage[];
