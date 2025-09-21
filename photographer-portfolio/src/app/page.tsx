@@ -1,3 +1,6 @@
+import ImageSlider from '@/components/ImageSlider';
+import { portfolioImages } from '@/data/portfolio';
+
 export default function Home() {
   return (
     <div className="container">
@@ -22,14 +25,12 @@ export default function Home() {
 
       {/* Main Content */}
       <main className="main">
-        <div>
-          <p>Image slider will go here</p>
-        </div>
+        <ImageSlider images={portfolioImages} />
       </main>
 
       {/* Footer */}
       <footer className="footer">
-        <div className="slide-counter">01</div>
+        {/* Footer content will be handled by ImageSlider component */}
       </footer>
     </div>
   );
