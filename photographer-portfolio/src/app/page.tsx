@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import ImageSlider from '@/components/ImageSlider';
-import { portfolioImages, getFilteredImages, FilterType } from '@/data/portfolio';
+import { getFilteredImages, FilterType } from '@/data/portfolio';
 
 export default function Home() {
   const [activeFilter, setActiveFilter] = useState<FilterType>('all');

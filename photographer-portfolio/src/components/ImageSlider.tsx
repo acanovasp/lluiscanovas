@@ -13,23 +13,10 @@ export default function ImageSlider({ images }: ImageSliderProps) {
   const [isAutoPlay, setIsAutoPlay] = useState(true);
   const [imageLoaded, setImageLoaded] = useState(false);
 
-  if (images.length === 0) {
-    return (
-      <div className="slider-container">
-        <p>No images to display</p>
-      </div>
-    );
-  }
-
-  const currentImage = images[currentIndex];
-  const prevIndex = currentIndex > 0 ? currentIndex - 1 : images.length - 1;
-  const nextIndex = currentIndex < images.length - 1 ? currentIndex + 1 : 0;
-
-  const goToSlide = (index: number) => {
-    setCurrentIndex(index);
-    setIsAutoPlay(false); // Stop autoplay on manual navigation
-    setImageLoaded(false); // Reset loading state
-  };
+  // Calculate indices safely
+  const currentImage = images[currentIndex] || images[0];
+  const prevIndex = images.length > 0 ? (currentIndex > 0 ? currentIndex - 1 : images.length - 1) : 0;
+  const nextIndex = images.length > 0 ? (currentIndex < images.length - 1 ? currentIndex + 1 : 0) : 0;
 
   const goToPrevious = useCallback(() => {
     setCurrentIndex(prev => prev > 0 ? prev - 1 : images.length - 1);
@@ -81,6 +68,15 @@ export default function ImageSlider({ images }: ImageSliderProps) {
 
     return () => clearInterval(interval);
   }, [isAutoPlay, images.length]);
+
+  // Early return after hooks
+  if (images.length === 0) {
+    return (
+      <div className="slider-container">
+        <p>No images to display</p>
+      </div>
+    );
+  }
 
   return (
     <div className="slider-container">
