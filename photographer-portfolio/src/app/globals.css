@@ -122,16 +122,17 @@ img {
   max-width: 1200px;
   margin: 0 auto;
   animation: fadeIn 0.5s ease-in-out;
+  will-change: transform, opacity;
 }
 
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translate3d(0, 10px, 0);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translate3d(0, 0, 0);
   }
 }
 
@@ -150,21 +151,26 @@ img {
 .slider-current img {
   border-radius: 4px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  will-change: transform;
+  transform: translateZ(0); /* Hardware acceleration */
 }
 
 .slider-thumbnail {
   cursor: pointer;
   opacity: 0.6;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.3s ease, transform 0.3s ease;
   flex-shrink: 0;
+  will-change: opacity, transform;
 }
 
 .slider-thumbnail:hover {
   opacity: 1;
+  transform: scale(1.05);
 }
 
 .slider-thumbnail img {
   border-radius: 4px;
+  transform: translateZ(0); /* Hardware acceleration */
 }
 
 .slider-counter {
