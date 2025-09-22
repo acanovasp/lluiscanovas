@@ -113,7 +113,7 @@ export default function ImageSlider({ images, onIndexChange }: ImageSliderProps)
               opacity: imageLoaded ? 1 : 0.7,
               transition: 'opacity 0.3s ease'
             }}
-            sizes="(max-width: 768px) 90vw, (max-width: 1200px) 80vw, 70vw"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 70vw"
             priority
             quality={90}
             onLoad={() => setImageLoaded(true)}
