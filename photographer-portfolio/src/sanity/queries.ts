@@ -54,7 +54,7 @@ export async function getPortfolioImages(): Promise<PortfolioImage[]> {
       id: item._id,
       title: item.title,
       category: item.category,
-      src: urlFor(item.image).width(1200).height(800).url() || '',
+      src: urlFor(item.image).quality(90).url() || '',
       alt: item.title,
     }));
   } catch (error) {

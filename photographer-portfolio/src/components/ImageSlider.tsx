@@ -6,9 +6,10 @@ import { PortfolioImage } from '@/sanity/queries';
 
 interface ImageSliderProps {
   images: PortfolioImage[];
+  onIndexChange?: (index: number) => void;
 }
 
-export default function ImageSlider({ images }: ImageSliderProps) {
+export default function ImageSlider({ images, onIndexChange }: ImageSliderProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAutoPlay, setIsAutoPlay] = useState(true);
   const [imageLoaded, setImageLoaded] = useState(false);
@@ -64,10 +65,17 @@ export default function ImageSlider({ images }: ImageSliderProps) {
 
     const interval = setInterval(() => {
       setCurrentIndex(prev => prev < images.length - 1 ? prev + 1 : 0);
-    }, 5000); // Change slide every 5 seconds
+    }, 3000); // Change slide every 5 seconds
 
     return () => clearInterval(interval);
   }, [isAutoPlay, images.length]);
+
+  // Notify parent of index changes
+  useEffect(() => {
+    if (onIndexChange) {
+      onIndexChange(currentIndex);
+    }
+  }, [currentIndex, onIndexChange]);
 
   // Early return after hooks
   if (images.length === 0) {
@@ -86,10 +94,10 @@ export default function ImageSlider({ images }: ImageSliderProps) {
           <Image
             src={images[prevIndex].src}
             alt={images[prevIndex].alt}
-            width={150}
-            height={100}
+            width={120}
+            height={80}
             style={{ objectFit: 'cover' }}
-            sizes="150px"
+            sizes="120px"
             loading="lazy"
           />
         </div>
@@ -99,14 +107,13 @@ export default function ImageSlider({ images }: ImageSliderProps) {
           <Image
             src={currentImage.src}
             alt={currentImage.alt}
-            width={800}
-            height={600}
+            width={1200}
+            height={800}
             style={{ 
-              objectFit: 'cover',
               opacity: imageLoaded ? 1 : 0.7,
               transition: 'opacity 0.3s ease'
             }}
-            sizes="(max-width: 768px) 90vw, 800px"
+            sizes="(max-width: 768px) 90vw, (max-width: 1200px) 80vw, 70vw"
             priority
             quality={90}
             onLoad={() => setImageLoaded(true)}
@@ -118,18 +125,13 @@ export default function ImageSlider({ images }: ImageSliderProps) {
           <Image
             src={images[nextIndex].src}
             alt={images[nextIndex].alt}
-            width={150}
-            height={100}
+            width={120}
+            height={80}
             style={{ objectFit: 'cover' }}
-            sizes="150px"
+            sizes="120px"
             loading="lazy"
           />
         </div>
-      </div>
-
-      {/* Slide counter */}
-      <div className="slider-counter">
-        {String(currentIndex + 1).padStart(2, '0')}
       </div>
     </div>
   );

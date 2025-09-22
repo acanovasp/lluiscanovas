@@ -2,7 +2,9 @@
 
 import { useState } from 'react';
 import ImageSlider from '@/components/ImageSlider';
-import { PortfolioImage, FilterType } from '@/sanity/queries';
+import { PortfolioImage } from '@/sanity/queries';
+
+type FilterType = 'photography' | 'graphic-design' | 'all';
 
 interface PortfolioClientProps {
   initialImages: PortfolioImage[];
@@ -10,6 +12,7 @@ interface PortfolioClientProps {
 
 export default function PortfolioClient({ initialImages }: PortfolioClientProps) {
   const [activeFilter, setActiveFilter] = useState<FilterType>('all');
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   // Filter images on the client side
   const getFilteredImages = (filter: FilterType): PortfolioImage[] => {
@@ -23,6 +26,11 @@ export default function PortfolioClient({ initialImages }: PortfolioClientProps)
 
   const handleFilterChange = (filter: FilterType) => {
     setActiveFilter(filter);
+    setCurrentImageIndex(0); // Reset to first image when filter changes
+  };
+
+  const handleIndexChange = (index: number) => {
+    setCurrentImageIndex(index);
   };
 
   return (
@@ -41,12 +49,14 @@ export default function PortfolioClient({ initialImages }: PortfolioClientProps)
           >
             Photography
           </button>
+          <span className="filter-comma">, </span>
           <button 
             className={`filter-link ${activeFilter === 'graphic-design' ? 'active' : ''}`}
             onClick={() => handleFilterChange('graphic-design')}
           >
             Graphic Design
           </button>
+          <span className="filter-comma">, </span>
           <button 
             className={`filter-link ${activeFilter === 'all' ? 'active' : ''}`}
             onClick={() => handleFilterChange('all')}
@@ -56,19 +66,27 @@ export default function PortfolioClient({ initialImages }: PortfolioClientProps)
         </div>
         
         <div className="header-section header-right">
-          <p>info@lluiscanovas.com</p>
-          <p>ES +34 682 665 624</p>
+          <div className="header-right-wrapper">
+            <p>info@lluiscanovas.com</p>
+            <p>ES +34 682 665 624</p>
+          </div>
         </div>
       </header>
 
       {/* Main Content */}
       <main className="main">
-        <ImageSlider key={activeFilter} images={filteredImages} />
+        <ImageSlider 
+          key={activeFilter} 
+          images={filteredImages} 
+          onIndexChange={handleIndexChange}
+        />
       </main>
 
       {/* Footer */}
       <footer className="footer">
-        {/* Footer content will be handled by ImageSlider component */}
+        <div className="slider-counter">
+          {String(currentImageIndex + 1).padStart(2, '0')}
+        </div>
       </footer>
     </div>
   );
