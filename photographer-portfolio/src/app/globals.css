@@ -35,6 +35,11 @@ body {
 a {
   color: var(--text-color);
   text-decoration: none;
+  transition: opacity 0.5s ease;
+}
+
+a:hover {
+  opacity: 0.5;
 }
 
 button {
@@ -86,6 +91,7 @@ img {
   display: flex;
   justify-content: center;
   gap: 0.2rem;
+  position: relative; /* for animated underline */
 }
 
 .filter-link {
@@ -94,16 +100,27 @@ img {
   cursor: pointer;
   transition: all 0.3s ease;
   padding-bottom: 2px;
-  border-bottom: 0.7px solid transparent;
+  border-bottom: none;
 }
 
 .filter-link:hover {
-  opacity: 0.6;
+  opacity: 0.5;
 }
 
-.filter-link.active {
-  border-bottom-color: var(--text-color);
-  font-weight: 500;
+.filter-link.active { font-weight: 500; }
+
+/* Shared animated underline */
+.header-center::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -2px;
+  height: 1px;
+  width: var(--u-width, 0px);
+  background: currentColor;
+  transform: translateX(var(--u-left, 0px));
+  transition: transform 200ms ease, width 200ms ease;
+  pointer-events: none;
 }
 
 .filter-comma {
@@ -199,7 +216,7 @@ img {
 
 .slider-thumbnail {
   cursor: pointer;
-  opacity: 0.6;
+  opacity: 0.5;
   transition: opacity 0.3s ease, transform 0.3s ease;
   flex-shrink: 0;
   will-change: opacity, transform;

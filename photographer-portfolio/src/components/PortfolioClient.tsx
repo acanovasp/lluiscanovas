@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import ImageSlider from '@/components/ImageSlider';
 import ContactInfo from '@/components/ContactInfo';
 import { PortfolioImage } from '@/sanity/queries';
@@ -14,6 +14,7 @@ interface PortfolioClientProps {
 export default function PortfolioClient({ initialImages }: PortfolioClientProps) {
   const [activeFilter, setActiveFilter] = useState<FilterType>('all');
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const underlineRootRef = useRef<HTMLDivElement | null>(null);
 
   // Filter images on the client side
   const getFilteredImages = (filter: FilterType): PortfolioImage[] => {
@@ -34,6 +35,31 @@ export default function PortfolioClient({ initialImages }: PortfolioClientProps)
     setCurrentImageIndex(index);
   };
 
+  // Animated underline logic
+  useEffect(() => {
+    const root = underlineRootRef.current;
+    if (!root) return;
+    const links = Array.from(root.querySelectorAll<HTMLButtonElement>('.filter-link'));
+    const move = (el: HTMLElement) => {
+      const r = el.getBoundingClientRect();
+      const p = root.getBoundingClientRect();
+      root.style.setProperty('--u-left', `${r.left - p.left}px`);
+      root.style.setProperty('--u-width', `${r.width}px`);
+    };
+    const active = links.find(l => l.classList.contains('active')) || links[0];
+    if (active) move(active);
+    const handlers: Array<() => void> = [];
+    links.forEach(l => {
+      const fn = () => move(l);
+      l.addEventListener('mouseenter', fn);
+      handlers.push(() => l.removeEventListener('mouseenter', fn));
+    });
+    const leave = () => active && move(active);
+    root.addEventListener('mouseleave', leave);
+    handlers.push(() => root.removeEventListener('mouseleave', leave));
+    return () => handlers.forEach(h => h());
+  }, [activeFilter]);
+
   return (
     <div className="container">
       {/* Header */}
@@ -43,7 +69,7 @@ export default function PortfolioClient({ initialImages }: PortfolioClientProps)
           <p>Photography and Graphic Design</p>
         </div>
         
-        <div className="header-section header-center">
+        <div ref={underlineRootRef} className="header-section header-center">
           <button 
             className={`filter-link ${activeFilter === 'photography' ? 'active' : ''}`}
             onClick={() => handleFilterChange('photography')}
