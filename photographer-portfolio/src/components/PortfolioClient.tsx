@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import ImageSlider from '@/components/ImageSlider';
+import ContactInfo from '@/components/ContactInfo';
 import { PortfolioImage } from '@/sanity/queries';
 
 type FilterType = 'photography' | 'graphic-design' | 'all';
@@ -66,10 +67,7 @@ export default function PortfolioClient({ initialImages }: PortfolioClientProps)
         </div>
         
         <div className="header-section header-right">
-          <div className="header-right-wrapper">
-            <p>info@lluiscanovas.com</p>
-            <p>ES +34 682 665 624</p>
-          </div>
+          <ContactInfo />
         </div>
       </header>
 
@@ -84,8 +82,13 @@ export default function PortfolioClient({ initialImages }: PortfolioClientProps)
 
       {/* Footer */}
       <footer className="footer">
-        <div className="slider-counter">
-          {String(currentImageIndex + 1).padStart(2, '0')}
+        <div className="footer-inner">
+          <div className="slider-counter">
+            {String(currentImageIndex + 1).padStart(2, '0')}
+          </div>
+          <div className="footer-contact">
+            <ContactInfo />
+          </div>
         </div>
       </footer>
     </div>
