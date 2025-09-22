@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import Image from 'next/image';
 import { PortfolioImage } from '@/sanity/queries';
 
@@ -13,6 +13,10 @@ export default function ImageSlider({ images, onIndexChange }: ImageSliderProps)
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAutoPlay, setIsAutoPlay] = useState(true);
   const [imageLoaded, setImageLoaded] = useState(false);
+  const touchStartXRef = useRef<number | null>(null);
+  const touchStartYRef = useRef<number | null>(null);
+  const touchActiveRef = useRef(false);
+  const [isTouch, setIsTouch] = useState(false);
 
   // Calculate indices safely
   const currentImage = images[currentIndex] || images[0];
@@ -29,6 +33,44 @@ export default function ImageSlider({ images, onIndexChange }: ImageSliderProps)
     setIsAutoPlay(false); // Stop autoplay on manual navigation
   }, [images.length]);
 
+  // Touch/Swipe handlers (mobile)
+  const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
+    const t = e.touches[0];
+    touchStartXRef.current = t.clientX;
+    touchStartYRef.current = t.clientY;
+    touchActiveRef.current = true;
+  };
+
+  const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (!touchActiveRef.current || touchStartXRef.current === null || touchStartYRef.current === null) return;
+    // prevent vertical scroll from being hijacked; allow small vertical movement
+    const t = e.touches[0];
+    const dx = t.clientX - touchStartXRef.current;
+    const dy = t.clientY - touchStartYRef.current;
+    // if horizontal swipe predominant, prevent default to get a crisp swipe
+    if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 10) {
+      e.preventDefault();
+    }
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (touchStartXRef.current === null || touchStartYRef.current === null) return;
+    const t = e.changedTouches[0];
+    const dx = t.clientX - touchStartXRef.current;
+    const dy = t.clientY - touchStartYRef.current;
+    const SWIPE_THRESHOLD = 40; // px
+    if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > SWIPE_THRESHOLD) {
+      if (dx < 0) {
+        goToNext();
+      } else {
+        goToPrevious();
+      }
+    }
+    touchStartXRef.current = null;
+    touchStartYRef.current = null;
+    touchActiveRef.current = false;
+  };
+
   // Keyboard navigation
   useEffect(() => {
     const handleKeyPress = (event: KeyboardEvent) => {
@@ -44,6 +86,20 @@ export default function ImageSlider({ images, onIndexChange }: ImageSliderProps)
       window.removeEventListener('keydown', handleKeyPress);
     };
   }, [goToPrevious, goToNext]);
+
+  // Detect touch-capable devices (mobile/tablets)
+  useEffect(() => {
+    const mq = window.matchMedia('(pointer: coarse)');
+    const set = () => setIsTouch(mq.matches);
+    set();
+    if (typeof mq.addEventListener === 'function') {
+      mq.addEventListener('change', set);
+      return () => mq.removeEventListener('change', set);
+    }
+    // Fallback for older browsers
+    mq.addListener?.(set);
+    return () => mq.removeListener?.(set);
+  }, []);
 
   // Preload adjacent images for smooth navigation
   useEffect(() => {
@@ -103,7 +159,13 @@ export default function ImageSlider({ images, onIndexChange }: ImageSliderProps)
         </div>
 
         {/* Main image */}
-        <div className="slider-current">
+        <div 
+          className="slider-current"
+          onClick={isTouch ? goToNext : undefined}
+          onTouchStart={isTouch ? handleTouchStart : undefined}
+          onTouchMove={isTouch ? handleTouchMove : undefined}
+          onTouchEnd={isTouch ? handleTouchEnd : undefined}
+        >
           <Image
             src={currentImage.src}
             alt={currentImage.alt}
