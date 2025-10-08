@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Lluís Canovas - Photography and Graphic Design",
-  description: "Photography and Graphic Design Portfolio by Lluís Canovas",
+  title: "Lluís Cánovas - Fotografia i Disseny gràfic",
+  description: "Portfoli de fotografia i disseny gràfic de Lluís Cánovas",
 };
 
 export default function RootLayout({
