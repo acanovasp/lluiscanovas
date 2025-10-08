@@ -5,22 +5,19 @@ import ImageSlider from '@/components/ImageSlider';
 import ContactInfo from '@/components/ContactInfo';
 import { PortfolioImage } from '@/sanity/queries';
 
-type FilterType = 'photography' | 'graphic-design' | 'all';
+type FilterType = 'photography' | 'graphic-design';
 
 interface PortfolioClientProps {
   initialImages: PortfolioImage[];
 }
 
 export default function PortfolioClient({ initialImages }: PortfolioClientProps) {
-  const [activeFilter, setActiveFilter] = useState<FilterType>('all');
+  const [activeFilter, setActiveFilter] = useState<FilterType>('photography');
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const underlineRootRef = useRef<HTMLDivElement | null>(null);
 
   // Filter images on the client side
   const getFilteredImages = (filter: FilterType): PortfolioImage[] => {
-    if (filter === 'all') {
-      return initialImages;
-    }
     return initialImages.filter(image => image.category === filter);
   };
 
@@ -65,8 +62,8 @@ export default function PortfolioClient({ initialImages }: PortfolioClientProps)
       {/* Header */}
       <header className="header">
         <div className="header-section header-left">
-          <h1>Lluís Canovas</h1>
-          <p>Photography and Graphic Design</p>
+          <h1>Lluís Cánovas</h1>
+          <p>Fotografia i Disseny gràfic</p>
         </div>
         
         <div ref={underlineRootRef} className="header-section header-center">
@@ -74,21 +71,14 @@ export default function PortfolioClient({ initialImages }: PortfolioClientProps)
             className={`filter-link ${activeFilter === 'photography' ? 'active' : ''}`}
             onClick={() => handleFilterChange('photography')}
           >
-            Photography
+            Fotografia i imatge IA
           </button>
           <span className="filter-comma">, </span>
           <button 
             className={`filter-link ${activeFilter === 'graphic-design' ? 'active' : ''}`}
             onClick={() => handleFilterChange('graphic-design')}
           >
-            Graphic Design
-          </button>
-          <span className="filter-comma">, </span>
-          <button 
-            className={`filter-link ${activeFilter === 'all' ? 'active' : ''}`}
-            onClick={() => handleFilterChange('all')}
-          >
-            All
+            Disseny gràfic
           </button>
         </div>
         

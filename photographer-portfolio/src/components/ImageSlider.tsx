@@ -17,6 +17,7 @@ export default function ImageSlider({ images, onIndexChange }: ImageSliderProps)
   const touchStartYRef = useRef<number | null>(null);
   const touchActiveRef = useRef(false);
   const [isTouch, setIsTouch] = useState(false);
+  const autoplayResumeTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Calculate indices safely
   const currentImage = images[currentIndex] || images[0];
@@ -25,12 +26,28 @@ export default function ImageSlider({ images, onIndexChange }: ImageSliderProps)
 
   const goToPrevious = useCallback(() => {
     setCurrentIndex(prev => prev > 0 ? prev - 1 : images.length - 1);
-    setIsAutoPlay(false); // Stop autoplay on manual navigation
+    setIsAutoPlay(false); // Pause autoplay on manual navigation
+    
+    // Resume autoplay after 5 seconds of inactivity
+    if (autoplayResumeTimerRef.current) {
+      clearTimeout(autoplayResumeTimerRef.current);
+    }
+    autoplayResumeTimerRef.current = setTimeout(() => {
+      setIsAutoPlay(true);
+    }, 200);
   }, [images.length]);
 
   const goToNext = useCallback(() => {
     setCurrentIndex(prev => prev < images.length - 1 ? prev + 1 : 0);
-    setIsAutoPlay(false); // Stop autoplay on manual navigation
+    setIsAutoPlay(false); // Pause autoplay on manual navigation
+    
+    // Resume autoplay after 5 seconds of inactivity
+    if (autoplayResumeTimerRef.current) {
+      clearTimeout(autoplayResumeTimerRef.current);
+    }
+    autoplayResumeTimerRef.current = setTimeout(() => {
+      setIsAutoPlay(true);
+    }, 200);
   }, [images.length]);
 
   // Touch/Swipe handlers (mobile)
