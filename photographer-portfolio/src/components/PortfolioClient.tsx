@@ -37,23 +37,51 @@ export default function PortfolioClient({ initialImages }: PortfolioClientProps)
     const root = underlineRootRef.current;
     if (!root) return;
     const links = Array.from(root.querySelectorAll<HTMLButtonElement>('.filter-link'));
+    
     const move = (el: HTMLElement) => {
       const r = el.getBoundingClientRect();
       const p = root.getBoundingClientRect();
       root.style.setProperty('--u-left', `${r.left - p.left}px`);
       root.style.setProperty('--u-width', `${r.width}px`);
     };
-    const active = links.find(l => l.classList.contains('active')) || links[0];
-    if (active) move(active);
+    
+    const updateActiveUnderline = () => {
+      const active = links.find(l => l.classList.contains('active')) || links[0];
+      if (active) move(active);
+    };
+    
+    // Initial position after fonts load and layout stabilizes
+    const initUnderline = () => {
+      // Wait for fonts to load
+      if (document.fonts && document.fonts.ready) {
+        document.fonts.ready.then(() => {
+          // Add extra delay to ensure layout is stable
+          requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+              updateActiveUnderline();
+            });
+          });
+        });
+      } else {
+        // Fallback for browsers without Font Loading API
+        setTimeout(updateActiveUnderline, 100);
+      }
+    };
+    
+    initUnderline();
+    
+    // Set up event listeners
     const handlers: Array<() => void> = [];
     links.forEach(l => {
       const fn = () => move(l);
       l.addEventListener('mouseenter', fn);
       handlers.push(() => l.removeEventListener('mouseenter', fn));
     });
-    const leave = () => active && move(active);
+    
+    const leave = () => updateActiveUnderline();
     root.addEventListener('mouseleave', leave);
     handlers.push(() => root.removeEventListener('mouseleave', leave));
+    
     return () => handlers.forEach(h => h());
   }, [activeFilter]);
 
