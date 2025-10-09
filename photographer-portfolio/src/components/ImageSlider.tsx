@@ -12,6 +12,7 @@ interface ImageSliderProps {
 export default function ImageSlider({ images, onIndexChange }: ImageSliderProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAutoPlay, setIsAutoPlay] = useState(true);
+  const [isPausedByUser, setIsPausedByUser] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
   const touchStartXRef = useRef<number | null>(null);
   const touchStartYRef = useRef<number | null>(null);
@@ -26,29 +27,49 @@ export default function ImageSlider({ images, onIndexChange }: ImageSliderProps)
 
   const goToPrevious = useCallback(() => {
     setCurrentIndex(prev => prev > 0 ? prev - 1 : images.length - 1);
-    setIsAutoPlay(false); // Pause autoplay on manual navigation
     
-    // Resume autoplay after 5 seconds of inactivity
-    if (autoplayResumeTimerRef.current) {
-      clearTimeout(autoplayResumeTimerRef.current);
+    // Only pause and resume if not manually paused by user
+    if (!isPausedByUser) {
+      setIsAutoPlay(false);
+      
+      // Resume autoplay after 200ms of inactivity
+      if (autoplayResumeTimerRef.current) {
+        clearTimeout(autoplayResumeTimerRef.current);
+      }
+      autoplayResumeTimerRef.current = setTimeout(() => {
+        setIsAutoPlay(true);
+      }, 200);
     }
-    autoplayResumeTimerRef.current = setTimeout(() => {
-      setIsAutoPlay(true);
-    }, 200);
-  }, [images.length]);
+  }, [images.length, isPausedByUser]);
 
   const goToNext = useCallback(() => {
     setCurrentIndex(prev => prev < images.length - 1 ? prev + 1 : 0);
-    setIsAutoPlay(false); // Pause autoplay on manual navigation
     
-    // Resume autoplay after 5 seconds of inactivity
+    // Only pause and resume if not manually paused by user
+    if (!isPausedByUser) {
+      setIsAutoPlay(false);
+      
+      // Resume autoplay after 200ms of inactivity
+      if (autoplayResumeTimerRef.current) {
+        clearTimeout(autoplayResumeTimerRef.current);
+      }
+      autoplayResumeTimerRef.current = setTimeout(() => {
+        setIsAutoPlay(true);
+      }, 200);
+    }
+  }, [images.length, isPausedByUser]);
+
+  // Toggle play/pause on main image click
+  const togglePlayPause = useCallback(() => {
+    setIsPausedByUser(prev => !prev);
+    setIsAutoPlay(prev => !prev);
+    
+    // Clear any pending resume timer when manually toggling
     if (autoplayResumeTimerRef.current) {
       clearTimeout(autoplayResumeTimerRef.current);
+      autoplayResumeTimerRef.current = null;
     }
-    autoplayResumeTimerRef.current = setTimeout(() => {
-      setIsAutoPlay(true);
-    }, 200);
-  }, [images.length]);
+  }, []);
 
   // Touch/Swipe handlers (mobile)
   const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
@@ -76,13 +97,20 @@ export default function ImageSlider({ images, onIndexChange }: ImageSliderProps)
     const dx = t.clientX - touchStartXRef.current;
     const dy = t.clientY - touchStartYRef.current;
     const SWIPE_THRESHOLD = 40; // px
+    
+    // Check if it's a swipe or a tap
     if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > SWIPE_THRESHOLD) {
+      // It's a swipe - navigate
       if (dx < 0) {
         goToNext();
       } else {
         goToPrevious();
       }
+    } else if (Math.abs(dx) < 10 && Math.abs(dy) < 10) {
+      // It's a tap - toggle play/pause
+      togglePlayPause();
     }
+    
     touchStartXRef.current = null;
     touchStartYRef.current = null;
     touchActiveRef.current = false;
@@ -134,14 +162,14 @@ export default function ImageSlider({ images, onIndexChange }: ImageSliderProps)
 
   // Auto-advance slideshow
   useEffect(() => {
-    if (!isAutoPlay || images.length <= 1) return;
+    if (!isAutoPlay || isPausedByUser || images.length <= 1) return;
 
     const interval = setInterval(() => {
       setCurrentIndex(prev => prev < images.length - 1 ? prev + 1 : 0);
-    }, 3000); // Change slide every 5 seconds
+    }, 3000); // Change slide every 3 seconds
 
     return () => clearInterval(interval);
-  }, [isAutoPlay, images.length]);
+  }, [isAutoPlay, isPausedByUser, images.length]);
 
   // Notify parent of index changes
   useEffect(() => {
@@ -176,27 +204,49 @@ export default function ImageSlider({ images, onIndexChange }: ImageSliderProps)
         </div>
 
         {/* Main image */}
-        <div 
-          className="slider-current"
-          onClick={isTouch ? goToNext : undefined}
-          onTouchStart={isTouch ? handleTouchStart : undefined}
-          onTouchMove={isTouch ? handleTouchMove : undefined}
-          onTouchEnd={isTouch ? handleTouchEnd : undefined}
-        >
-          <Image
-            src={currentImage.src}
-            alt={currentImage.alt}
-            width={1200}
-            height={800}
-            style={{ 
-              opacity: imageLoaded ? 1 : 0.7,
-              transition: 'opacity 0.3s ease'
-            }}
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 70vw"
-            priority
-            quality={90}
-            onLoad={() => setImageLoaded(true)}
-          />
+        <div className="slider-current-wrapper">
+          <div 
+            className="slider-current"
+            onClick={isTouch ? undefined : togglePlayPause}
+            onTouchStart={isTouch ? handleTouchStart : undefined}
+            onTouchMove={isTouch ? handleTouchMove : undefined}
+            onTouchEnd={isTouch ? handleTouchEnd : undefined}
+          >
+            <Image
+              src={currentImage.src}
+              alt={currentImage.alt}
+              width={1200}
+              height={800}
+              style={{ 
+                opacity: imageLoaded ? 1 : 0.7,
+                transition: 'opacity 0.3s ease'
+              }}
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 70vw"
+              priority
+              quality={90}
+              onLoad={() => setImageLoaded(true)}
+            />
+          </div>
+          
+          {/* Play/Pause button */}
+          <button 
+            className="play-pause-btn"
+            onClick={togglePlayPause}
+            aria-label={isPausedByUser ? "Play slideshow" : "Pause slideshow"}
+          >
+            {isPausedByUser ? (
+              // Play icon
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path d="M4 2L14 8L4 14V2Z" fill="currentColor" />
+              </svg>
+            ) : (
+              // Pause icon
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <rect x="4" y="2" width="3" height="12" fill="currentColor" />
+                <rect x="9" y="2" width="3" height="12" fill="currentColor" />
+              </svg>
+            )}
+          </button>
         </div>
 
         {/* Next thumbnail */}
