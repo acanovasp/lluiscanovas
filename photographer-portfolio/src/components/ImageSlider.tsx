@@ -244,6 +244,8 @@ export default function ImageSlider({ images, onIndexChange, onReachEnd }: Image
               width={1200}
               height={800}
               style={{ 
+                width: 'auto',
+                height: 'auto',
                 opacity: imageLoaded ? 1 : 0.7,
                 transition: 'opacity 0.3s ease'
               }}
