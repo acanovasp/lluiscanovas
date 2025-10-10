@@ -7,13 +7,15 @@ import { PortfolioImage } from '@/sanity/queries';
 interface ImageSliderProps {
   images: PortfolioImage[];
   onIndexChange?: (index: number) => void;
+  onReachEnd?: () => void; // Callback when reaching the last image and trying to go next
 }
 
-export default function ImageSlider({ images, onIndexChange }: ImageSliderProps) {
+export default function ImageSlider({ images, onIndexChange, onReachEnd }: ImageSliderProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAutoPlay, setIsAutoPlay] = useState(true);
   const [isPausedByUser, setIsPausedByUser] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
+  const [shouldTriggerEnd, setShouldTriggerEnd] = useState(false);
   const touchStartXRef = useRef<number | null>(null);
   const touchStartYRef = useRef<number | null>(null);
   const touchActiveRef = useRef(false);
@@ -43,7 +45,15 @@ export default function ImageSlider({ images, onIndexChange }: ImageSliderProps)
   }, [images.length, isPausedByUser]);
 
   const goToNext = useCallback(() => {
-    setCurrentIndex(prev => prev < images.length - 1 ? prev + 1 : 0);
+    setCurrentIndex(prev => {
+      // Check if we're at the last image
+      if (prev >= images.length - 1) {
+        // Schedule callback to run outside render cycle
+        setShouldTriggerEnd(true);
+        return 0; // Reset to first image (will switch to other filter's first image)
+      }
+      return prev + 1;
+    });
     
     // Only pause and resume if not manually paused by user
     if (!isPausedByUser) {
@@ -165,7 +175,15 @@ export default function ImageSlider({ images, onIndexChange }: ImageSliderProps)
     if (!isAutoPlay || isPausedByUser || images.length <= 1) return;
 
     const interval = setInterval(() => {
-      setCurrentIndex(prev => prev < images.length - 1 ? prev + 1 : 0);
+      setCurrentIndex(prev => {
+        // Check if we're at the last image
+        if (prev >= images.length - 1) {
+          // Schedule callback to run outside render cycle
+          setShouldTriggerEnd(true);
+          return 0; // Reset to first image (will switch to other filter's first image)
+        }
+        return prev + 1;
+      });
     }, 3000); // Change slide every 3 seconds
 
     return () => clearInterval(interval);
@@ -177,6 +195,14 @@ export default function ImageSlider({ images, onIndexChange }: ImageSliderProps)
       onIndexChange(currentIndex);
     }
   }, [currentIndex, onIndexChange]);
+
+  // Trigger onReachEnd callback outside render cycle
+  useEffect(() => {
+    if (shouldTriggerEnd && onReachEnd) {
+      onReachEnd();
+      setShouldTriggerEnd(false);
+    }
+  }, [shouldTriggerEnd, onReachEnd]);
 
   // Early return after hooks
   if (images.length === 0) {

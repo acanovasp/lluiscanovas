@@ -32,6 +32,13 @@ export default function PortfolioClient({ initialImages }: PortfolioClientProps)
     setCurrentImageIndex(index);
   };
 
+  const handleReachEnd = () => {
+    // Switch to the other filter when reaching the end
+    const nextFilter: FilterType = activeFilter === 'photography' ? 'graphic-design' : 'photography';
+    setActiveFilter(nextFilter);
+    setCurrentImageIndex(0); // Will start at first image of new filter
+  };
+
   // Animated underline logic
   useEffect(() => {
     const root = underlineRootRef.current;
@@ -121,6 +128,7 @@ export default function PortfolioClient({ initialImages }: PortfolioClientProps)
           key={activeFilter} 
           images={filteredImages} 
           onIndexChange={handleIndexChange}
+          onReachEnd={handleReachEnd}
         />
       </main>
 
